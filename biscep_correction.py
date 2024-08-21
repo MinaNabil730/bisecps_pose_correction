@@ -3,16 +3,17 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import time
-import pyttsx3
-import random
+from gtts import gTTS
+from io import BytesIO
+import pygame
 
 # Initialize MediaPipe Pose module
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
 mp_drawing = mp.solutions.drawing_utils
 
-# Initialize pyttsx3 for TTS
-engine = pyttsx3.init()
+# Initialize pygame mixer for audio playback
+pygame.mixer.init()
 
 def calculate_angle(a, b, c):
     a = np.array(a)  # First
@@ -29,10 +30,16 @@ def calculate_angle(a, b, c):
 
 def speak(text):
     try:
-        engine.say(text)
-        engine.runAndWait()
+        tts = gTTS(text=text, lang='en')
+        fp = BytesIO()
+        tts.write_to_fp(fp)
+        fp.seek(0)
+        pygame.mixer.music.load(fp)
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            time.sleep(0.1)
     except Exception as e:
-        print(f"Error with TTS engine: {e}")
+        print(f"Error with TTS: {e}")
 
 def get_motivational_message():
     messages = [
@@ -42,7 +49,7 @@ def get_motivational_message():
         "Fantastic effort! You're on fire!",
         "Keep it up! You're making great progress!"
     ]
-    return random.choice(messages)
+    return np.random.choice(messages)
 
 def process_camera():
     cap = cv2.VideoCapture(0)
@@ -135,6 +142,6 @@ st.title('Biceps Curl Posture Correction')
 # Display the GIF in the sidebar (it will stay fixed in the sidebar)
 gif_url = "Hantelcurl.gif"  # Replace with the path or URL to your GIF
 st.sidebar.image(gif_url, use_column_width=True)
+
 # Process camera input
 process_camera()
-
