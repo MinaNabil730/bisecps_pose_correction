@@ -3,4 +3,3 @@ mediapipe
 numpy
 streamlit
 pyttsx3
-opencv-python-headless
